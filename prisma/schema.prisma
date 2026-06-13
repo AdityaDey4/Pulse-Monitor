@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,79 +8,74 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String?
+  createdAt DateTime  @default(now())
+  password  String?
+  updatedAt DateTime  @updatedAt
+  image     String?
+  accounts  Account[]
+  monitors  Monitor[]
+}
 
-  monitors  Monitor[]
+model Account {
+  id                Int    @id @default(autoincrement())
+  provider          String
+  providerAccountId String
+  userId            Int
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  @@unique([provider, providerAccountId])
 }
 
 model Monitor {
-  id              Int      @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
+  userId          Int
+  name            String
+  url             String
+  method          String         @default("GET")
+  intervalMinutes Int
+  isActive        Boolean        @default(true)
+  lastCheckedAt   DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  checkResults    CheckResult[]
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications   Notification[]
 
-  userId          Int
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  name            String
-  url             String
-  method          String   @default("GET")
-
-  intervalMinutes Int
-  isActive        Boolean  @default(true)
-
-  lastCheckedAt   DateTime?
-
-  checkResults    CheckResult[]
-  notifications   Notification[]
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
+  @@index([userId])
 }
 
 model CheckResult {
-  id            Int       @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
+  monitorId    Int
+  success      Boolean
+  statusCode   Int?
+  responseTime Int?
+  errorMessage String?
+  checkedAt    DateTime @default(now())
+  monitor      Monitor  @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
-  monitorId     Int
-  monitor       Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
-
-  success       Boolean
-
-  statusCode    Int?
-  responseTime  Int?
-
-  errorMessage  String?
-
-  checkedAt     DateTime  @default(now())
-
-  @@index([monitorId])
-  @@index([checkedAt])
+  @@index([monitorId])
+  @@index([checkedAt])
 }
 
 model Notification {
-  id         Int       @id @default(autoincrement())
+  id        Int              @id @default(autoincrement())
+  monitorId Int
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  monitor   Monitor          @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
-  monitorId  Int
-  monitor    Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
-
-  message    String
-
-  type       NotificationType
-
-  isRead     Boolean   @default(false)
-  readAt     DateTime?
-  createdAt  DateTime  @default(now())
-
-  @@index([monitorId])
+  @@index([monitorId])
 }
 
 enum NotificationType {
-  DOWN
-  RECOVERED
-  SLOW_RESPONSE
+  DOWN
+  RECOVERED
+  SLOW_RESPONSE
 }
