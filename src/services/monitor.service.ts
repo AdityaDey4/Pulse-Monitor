@@ -11,6 +11,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
 } from "@/types/common.type";
+import { removeMonitor, scheduleMonitor } from "./queue.service";
 
   export async function createMonitor(
     userId: number,
@@ -27,6 +28,16 @@ import {
         },
       });
 
+      await scheduleMonitor(
+        {
+          monitorId: monitor.id,
+        },
+        monitor.intervalMinutes,
+      );
+
+      console.log(
+        `Scheduled monitor ${monitor.id} with interval ${monitor.intervalMinutes} minutes`,
+      );
       return createSuccessResponse(
         "Monitor created successfully",
         monitor,
@@ -92,6 +103,14 @@ import {
         },
       });
 
+      await removeMonitor({
+        monitorId,
+      });
+
+      console.log(
+        `Removed monitor ${monitorId} from queue`,
+      );
+
       return createSuccessResponse(
         "Monitor deleted successfully",
         null,
@@ -135,6 +154,17 @@ import {
               data.intervalMinutes,
           },
         });
+
+        await removeMonitor({
+          monitorId: data.id,
+        });
+
+        await scheduleMonitor(
+          {
+            monitorId: data.id,
+          },
+          data.intervalMinutes,
+        );
 
       return createSuccessResponse(
         "Monitor updated successfully",

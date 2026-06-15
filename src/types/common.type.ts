@@ -3,7 +3,7 @@ export type ApiStatus = 'success' | 'error'
 export class AppResponseWrapper<T = unknown> {
   status: ApiStatus = 'success'
   message: string = ''
-  data: T = undefined as unknown as T
+  data: T | null = null
 }
 
 export function createSuccessResponse<T>(
@@ -15,9 +15,12 @@ export function createSuccessResponse<T>(
 
 export function createErrorResponse<T = unknown>(
   message: string,
-  data: T | null = null,
-): AppResponseWrapper<T | null> {
-  return { status: 'error', message, data }
+): AppResponseWrapper<T> {
+  return {
+    status: 'error',
+    message,
+    data: null,
+  }
 }
 
 export type PagedData<T> = {
