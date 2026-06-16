@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { Monitor } from "../../generated/prisma/client";
+import { determineMonitorStatus } from "@/lib/monitor-status-config";
 
 export async function checkMonitor(
     monitorId: number
-) {
+): Promise<void> {
     const monitor =
         await prisma.monitor.findUnique({
             where: {
@@ -38,20 +40,6 @@ export async function checkMonitor(
                 responseTime,
             },
         });
-
-        await prisma.monitor.update({
-            where: {
-                id: monitorId,
-            },
-            data: {
-                lastCheckedAt:
-                    new Date(),
-            },
-        });
-
-        console.log(
-            `[SUCCESS] ${monitor.name}`,
-        );
     } catch (error) {
         const responseTime =
             Date.now() - startedAt;
@@ -67,7 +55,8 @@ export async function checkMonitor(
                         : "Unknown Error",
             },
         });
-
+    } finally {
+        await changeMonitorStatus(monitor);
         await prisma.monitor.update({
             where: {
                 id: monitorId,
@@ -77,9 +66,48 @@ export async function checkMonitor(
                     new Date(),
             },
         });
-
-        console.error(
-            `[FAILED] ${monitor.name}`,
-        );
     }
+}
+
+async function getConsecutiveResults(
+  monitorId: number,
+  limit = 10,
+) {
+  return prisma.checkResult.findMany({
+    where: {
+      monitorId,
+    },
+    orderBy: {
+      checkedAt: "desc",
+    },
+    take: limit,
+  });
+}
+
+async function changeMonitorStatus(monitor: Monitor) {
+
+  const checkResults = await getConsecutiveResults(
+    monitor.id,
+  );
+
+  const nextStatus =
+    determineMonitorStatus(
+      monitor.status,
+      checkResults
+    );
+
+    console.log("Next status : ", nextStatus);
+
+  if (
+    nextStatus !== monitor.status
+  ) {
+    await prisma.monitor.update({
+      where: {
+        id: monitor.id,
+      },
+      data: {
+        status: nextStatus,
+      },
+    });
+  }
 }

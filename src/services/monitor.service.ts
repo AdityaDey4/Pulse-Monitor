@@ -35,9 +35,6 @@ import { removeMonitor, scheduleMonitor } from "./queue.service";
         monitor.intervalMinutes,
       );
 
-      console.log(
-        `Scheduled monitor ${monitor.id} with interval ${monitor.intervalMinutes} minutes`,
-      );
       return createSuccessResponse(
         "Monitor created successfully",
         monitor,
@@ -106,10 +103,6 @@ import { removeMonitor, scheduleMonitor } from "./queue.service";
       await removeMonitor({
         monitorId,
       });
-
-      console.log(
-        `Removed monitor ${monitorId} from queue`,
-      );
 
       return createSuccessResponse(
         "Monitor deleted successfully",
