@@ -1,8 +1,8 @@
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 import { MonitorCard } from "./monitor-card";
 
 interface Props {
-  monitors: Monitor[];
+  monitors: MonitorType[];
 }
 
 export function MonitorList({

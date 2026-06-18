@@ -1,4 +1,4 @@
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -14,7 +14,7 @@ import {
 import { MonitorActions } from "./monitor-actions";
 
 interface Props {
-  monitors: Monitor[];
+  monitors: MonitorType[];
 }
 
 export function MonitorTable({ monitors }: Props) {

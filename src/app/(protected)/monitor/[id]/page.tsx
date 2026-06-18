@@ -15,6 +15,7 @@ import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { SuccessFailureChart } from "@/components/monitor/_partials/monitor-analytics-section";
 import { ResponseMetricsCard } from "@/components/monitor/_partials/response-metrics-card";
 import { AvailabilityHeatmap } from "@/components/monitor/_partials/availability-heatmap";
+import { CheckResultsSheet } from "@/components/monitor/_partials/check-results-sheet";
 
 interface Props {
   params: Promise<{
@@ -36,12 +37,16 @@ export default async function MonitorDetailsPage({ params }: Props) {
   const metrics = calculateMonitorMetrics(checkResults);
   return (
     <div className="space-y-6">
-      <Button variant="ghost" asChild>
-        <Link href="/monitor">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Link>
-      </Button>
+      <div className="flex items-center justify-between">
+        <CheckResultsSheet monitorId={monitor.id} />
+
+        <Button variant="outline" asChild>
+          <Link href="/monitor">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Monitors
+          </Link>
+        </Button>
+      </div>
 
       <MonitorOverviewCard monitor={monitor} />
 
@@ -63,7 +68,7 @@ export default async function MonitorDetailsPage({ params }: Props) {
           value={String(checkResults.length)}
         />
       </div>
-
+      {/* In monitor-details page — add items-stretch to this grid */}
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-4">
           <ResponseTimeChart checkResults={checkResults} />
@@ -74,16 +79,15 @@ export default async function MonitorDetailsPage({ params }: Props) {
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <SuccessFailureChart
-          successfulChecks={metrics.successfulChecks}
-          failedChecks={metrics.failedChecks}
-        />
-
         <ResponseMetricsCard
           fastestResponse={metrics.fastestResponse}
           averageResponse={metrics.averageResponseTime}
           slowestResponse={metrics.slowestResponse}
           latestResponse={metrics.latestResponse}
+        />
+        <SuccessFailureChart
+          successfulChecks={metrics.successfulChecks}
+          failedChecks={metrics.failedChecks}
         />
       </div>
 

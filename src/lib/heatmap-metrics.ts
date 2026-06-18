@@ -1,4 +1,4 @@
-import { CheckResult } from "../../generated/prisma/client";
+import type { CheckResultType } from "@/types/monitor.type";
 
 export interface HeatmapDay {
   date: string;
@@ -10,7 +10,7 @@ export interface HeatmapDay {
 }
 
 export function generateHeatmapData(
-  checkResults: CheckResult[],
+  checkResults: CheckResultType[],
   year: number,
 ): HeatmapDay[] {
   const result: HeatmapDay[] = [];

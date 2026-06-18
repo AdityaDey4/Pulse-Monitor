@@ -1,8 +1,8 @@
-import { CheckResult } from "../../generated/prisma/client";
+import type { CheckResultType } from "@/types/monitor.type";
 
 
 
-export function calculateMonitorMetrics(checkResults: CheckResult[]) {
+export function calculateMonitorMetrics(checkResults: CheckResultType[]) {
   const totalChecks = checkResults.length;
   const latestCheck = checkResults[0];
   const successfulChecks = checkResults.filter(

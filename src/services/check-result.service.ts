@@ -2,77 +2,60 @@ import { prisma } from "@/lib/prisma";
 import { Monitor } from "../../generated/prisma/client";
 import { determineMonitorStatus } from "@/lib/monitor-status-config";
 
-export async function applyCheckResult(
-    monitorId: number
-): Promise<void> {
-    const monitor =
-        await prisma.monitor.findUnique({
-            where: {
-                id: monitorId,
-            },
-        });
+export async function applyCheckResult(monitorId: number): Promise<void> {
+  const monitor = await prisma.monitor.findUnique({
+    where: {
+      id: monitorId,
+    },
+  });
 
-    if (!monitor) {
-        return;
-    }
+  if (!monitor) {
+    return;
+  }
 
-    const startedAt = Date.now();
+  const startedAt = Date.now();
 
-    try {
-        const response = await fetch(
-            monitor.url,
-            {
-                method: monitor.method,
-                signal:
-                    AbortSignal.timeout(10000),
-            },
-        );
+  try {
+    const response = await fetch(monitor.url, {
+      method: monitor.method,
+      signal: AbortSignal.timeout(10000),
+    });
 
-        const responseTime =
-            Date.now() - startedAt;
+    const responseTime = Date.now() - startedAt;
 
-        await prisma.checkResult.create({
-            data: {
-                monitorId,
-                success: response.ok,
-                statusCode:
-                    response.status,
-                responseTime,
-            },
-        });
-    } catch (error) {
-        const responseTime =
-            Date.now() - startedAt;
+    await prisma.checkResult.create({
+      data: {
+        monitorId,
+        success: response.ok,
+        statusCode: response.status,
+        responseTime,
+      },
+    });
+  } catch (error) {
+    const responseTime = Date.now() - startedAt;
 
-        await prisma.checkResult.create({
-            data: {
-                monitorId,
-                success: false,
-                responseTime,
-                errorMessage:
-                    error instanceof Error
-                        ? error.message
-                        : "Unknown Error",
-            },
-        });
-    } finally {
-        await changeMonitorStatus(monitor);
-        await prisma.monitor.update({
-            where: {
-                id: monitorId,
-            },
-            data: {
-                lastCheckedAt:
-                    new Date(),
-            },
-        });
-    }
+    await prisma.checkResult.create({
+      data: {
+        monitorId,
+        success: false,
+        responseTime,
+        errorMessage: error instanceof Error ? error.message : "Unknown Error",
+      },
+    });
+  } finally {
+    await changeMonitorStatus(monitor);
+    await prisma.monitor.update({
+      where: {
+        id: monitorId,
+      },
+      data: {
+        lastCheckedAt: new Date(),
+      },
+    });
+  }
 }
 
-async function getConsecutiveCheckResults(
-  monitorId: number,
-  limit = 10,
-) {
+async function getConsecutiveCheckResults(monitorId: number, limit = 10) {
   return prisma.checkResult.findMany({
     where: {
       monitorId,
@@ -85,22 +68,13 @@ async function getConsecutiveCheckResults(
 }
 
 async function changeMonitorStatus(monitor: Monitor) {
+  const checkResults = await getConsecutiveCheckResults(monitor.id);
 
-  const checkResults = await getConsecutiveCheckResults(
-    monitor.id,
-  );
+  const nextStatus = determineMonitorStatus(monitor.status, checkResults);
 
-  const nextStatus =
-    determineMonitorStatus(
-      monitor.status,
-      checkResults
-    );
+  console.log("Next status : ", nextStatus);
 
-    console.log("Next status : ", nextStatus);
-
-  if (
-    nextStatus !== monitor.status
-  ) {
+  if (nextStatus !== monitor.status) {
     await prisma.monitor.update({
       where: {
         id: monitor.id,
@@ -110,4 +84,32 @@ async function changeMonitorStatus(monitor: Monitor) {
       },
     });
   }
+}
+
+export async function getCheckResults(monitorId: number, cursor?: number) {
+  const checkResults = await prisma.checkResult.findMany({
+    where: {
+      monitorId,
+    },
+
+    take: 20,
+
+    ...(cursor && {
+      skip: 1,
+      cursor: {
+        id: cursor,
+      },
+    }),
+
+    orderBy: {
+      checkedAt: "desc",
+    },
+  });
+
+  const lastItem = checkResults[checkResults.length - 1];
+
+  return {
+    checkResults,
+    nextCursor: checkResults.length > 0 ? lastItem.id : null,
+  };
 }

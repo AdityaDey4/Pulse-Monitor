@@ -34,10 +34,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 import { UpdateMonitorDialog } from "./update-monitor-dialog";
 interface Props {
-  monitor: Monitor;
+  monitor: MonitorType;
 }
 
 export function MonitorActions({ monitor }: Props) {
