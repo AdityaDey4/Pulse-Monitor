@@ -37,11 +37,9 @@ export default async function MonitorDetailsPage({ params }: Props) {
   const metrics = calculateMonitorMetrics(checkResults);
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <CheckResultsSheet monitorId={monitor.id} />
-
+      <div className="flex justify-end">
         <Button variant="outline" asChild>
-          <Link href="/monitor">
+          <Link href="/monitors">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Monitors
           </Link>
@@ -75,7 +73,10 @@ export default async function MonitorDetailsPage({ params }: Props) {
         </div>
 
         <div className="lg:col-span-1">
-          <RecentChecksTimeline checkResults={checkResults} />
+          <RecentChecksTimeline
+            monitorId={monitor.id}
+            checkResults={checkResults}
+          />
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">

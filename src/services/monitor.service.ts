@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import {
   CheckResult,
   Monitor,
-  Notification,
 } from "../../generated/prisma/client";
 
 import {
@@ -41,7 +40,6 @@ export async function getMonitorDetails(
           orderBy: {
             checkedAt: "desc",
           },
-          take: 50,
         },
       },
     });

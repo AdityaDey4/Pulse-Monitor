@@ -13,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, TableProperties } from "lucide-react";
+import { ArrowRight, Loader2, Search, TableProperties } from "lucide-react";
 
 import type { CheckResultType } from "@/types/monitor.type";
 import { CheckResultsTable } from "./check-results-table";
@@ -132,8 +132,8 @@ export function CheckResultsSheet({ monitorId }: Props) {
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button>
-          <TableProperties className="mr-2 h-4 w-4" />
-          Check Results
+      View All Checks
+      <ArrowRight className="h-4 w-4" />
         </Button>
       </SheetTrigger>
 
