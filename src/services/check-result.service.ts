@@ -45,6 +45,10 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
         responseTime,
       },
     });
+    console.log(
+  "Running check for monitor:",
+  monitorId
+);
   } catch (error) {
     const responseTime = Date.now() - startedAt;
 

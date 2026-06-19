@@ -23,7 +23,6 @@ import {
 export interface MonitorDetails {
   monitor: Monitor;
   checkResults: CheckResult[];
-  notifications: Notification[];
 }
 
 export async function getMonitorDetails(
@@ -44,13 +43,6 @@ export async function getMonitorDetails(
           },
           take: 50,
         },
-
-        notifications: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 50,
-        },
       },
     });
 
@@ -61,9 +53,9 @@ export async function getMonitorDetails(
     return createSuccessResponse("Monitor fetched successfully", {
       monitor,
       checkResults: monitor.checkResults,
-      notifications: monitor.notifications,
     });
-  } catch {
+  } catch(error) {
+    console.error("Error fetching monitor details:", error);
     return createErrorResponse("Failed to fetch monitor");
   }
 }
