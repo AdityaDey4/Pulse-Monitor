@@ -90,7 +90,6 @@ async function changeMonitorStatus(monitor: Monitor) {
 
   const nextStatus = determineMonitorStatus(monitor.status, checkResults);
 
-  console.log("Next status : ", nextStatus);
 
   if (
     nextStatus !== monitor.status
@@ -104,13 +103,12 @@ async function changeMonitorStatus(monitor: Monitor) {
             status: nextStatus,
         },
     });
-    console.log("Monitor Status changed");
         
     const notification =
       await prisma.notification.create({
         data: {
           userId: monitor.userId,
-          type: nextStatus === "DOWN" ? NotificationType.ALERT : NotificationType.SUCCESS,
+          type: nextStatus === "DOWN" ? NotificationType.ERROR : NotificationType.SUCCESS,
           message: `Monitor "${monitor.name}" is now ${nextStatus}`,
           redirectPath: `/monitors/${monitor.id}`,
         },

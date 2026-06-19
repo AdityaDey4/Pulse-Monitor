@@ -122,7 +122,7 @@ export function MonitorActions({ monitor }: Props) {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem asChild>
-            <Link href={`/monitor/${monitorId}`}>
+            <Link href={`/monitors/${monitorId}`}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </Link>
