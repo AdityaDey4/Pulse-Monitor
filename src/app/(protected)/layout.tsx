@@ -8,6 +8,7 @@ import {
 
 import { AppSidebar } from "@/components/layouts/_partials/AppSidebar";
 import { AppHeader } from "@/components/layouts/_partials/AppHeader";
+import { SocketProvider } from "@/providers/socket-provider";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,9 @@ export default async function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
+      <SocketProvider
+        userId={session.user.id}
+      />
 
       <SidebarInset className="flex h-screen flex-col">
         <AppHeader />

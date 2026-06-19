@@ -27,6 +27,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layouts/thems/theme-toggle";
+import { useNotifications } from "@/hooks/use-notifications";
 
 function formatSegment(segment: string) {
   return segment
@@ -47,6 +48,8 @@ export function AppHeader() {
     href: "/dashboard/" + segments.slice(0, index + 1).join("/"),
     label: formatSegment(segment),
   }));
+
+  useNotifications();
 
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 sm:px-6">

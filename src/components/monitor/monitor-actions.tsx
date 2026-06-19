@@ -34,10 +34,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 import { UpdateMonitorDialog } from "./update-monitor-dialog";
 interface Props {
-  monitor: Monitor;
+  monitor: MonitorType;
 }
 
 export function MonitorActions({ monitor }: Props) {
@@ -122,7 +122,7 @@ export function MonitorActions({ monitor }: Props) {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem asChild>
-            <Link href={`/monitor/${monitorId}`}>
+            <Link href={`/monitors/${monitorId}`}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </Link>

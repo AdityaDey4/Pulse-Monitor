@@ -8,3 +8,5 @@ export const redis = new IORedis({
   port: Number(process.env.REDIS_PORT),
   maxRetriesPerRequest: null,
 });
+
+export const subscriber = redis.duplicate();

@@ -34,7 +34,7 @@ const navigation = [
   {
     label: "Monitoring",
     items: [
-      { title: "Monitors", href: "/monitor", icon: Activity },
+      { title: "Monitors", href: "/monitors", icon: Activity },
     ],
   },
 ];

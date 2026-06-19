@@ -17,6 +17,7 @@ model User {
   image     String?
   accounts  Account[]
   monitors  Monitor[]
+  notifications   Notification[]
 }
 
 model Account {
@@ -43,7 +44,6 @@ model Monitor {
   updatedAt       DateTime       @updatedAt
   checkResults    CheckResult[]
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notifications   Notification[]
 
   @@index([userId])
 }
@@ -64,15 +64,16 @@ model CheckResult {
 
 model Notification {
   id        Int              @id @default(autoincrement())
-  monitorId Int
+  userId    Int
   message   String
   type      NotificationType
   isRead    Boolean          @default(false)
+  redirectPath String?
   readAt    DateTime?
   createdAt DateTime         @default(now())
-  monitor   Monitor          @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([monitorId])
+  @@index([userId])
 }
 
 
@@ -90,7 +91,9 @@ enum MonitorStatus {
 }
 
 enum NotificationType {
-  DOWN
-  RECOVERED
-  SLOW_RESPONSE
+  INFO
+  ALERT
+  REMINDER
+  ERROR
+  SUCCESS
 }

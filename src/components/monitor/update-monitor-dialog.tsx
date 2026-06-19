@@ -13,11 +13,11 @@ import {
 
 import { MonitorForm } from "./monitor-form";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 import { Pencil } from "lucide-react";
 
 interface Props {
-  monitor: Monitor;
+  monitor: MonitorType;
 }
 
 export function UpdateMonitorDialog({ monitor }: Props) {

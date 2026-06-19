@@ -1,9 +1,9 @@
-import { Monitor } from "../../../generated/prisma/client";
+import type { MonitorType } from "@/types/monitor.type";
 
 import { DeleteMonitorButton } from "./delete-monitor-button";
 
 interface Props {
-  monitor: Monitor;
+  monitor: MonitorType;
 }
 
 export function MonitorCard({
