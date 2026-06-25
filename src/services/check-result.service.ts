@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { Monitor, NotificationType } from "../../generated/prisma/client";
-import { determineMonitorStatus } from "@/lib/monitor-status-config";
+import { Monitor, MonitorStatus, NotificationType } from "../../generated/prisma/client";
+import { determineMonitorStatus, EvaluationInput } from "@/lib/monitor-status-config";
 import { CheckResultType } from "@/types/monitor.type";
 import {
   AppResponseWrapper,
@@ -10,6 +10,7 @@ import {
 import { SOCKET_EVENTS } from "@/realtime/events";
 import { publishEvent } from "@/realtime/publisher";
 import { NotificationPayload } from "@/types/realtime.type";
+import { getMonitorCriteria } from "./monitor-success-criteria.service";
 export interface CheckResultsPagination {
   checkResults: CheckResultType[];
   nextCursor: number | null;
@@ -37,6 +38,23 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
 
     const responseTime = Date.now() - startedAt;
 
+    const responseBody =
+      await response
+        .clone()
+        .json()
+        .catch(() => null);
+
+    const evaluationInput = {
+      responseStatusCode:
+        response.status,
+
+      responseTime,
+
+      responseBody,
+    };
+
+    await changeMonitorStatus(monitor, evaluationInput);
+
     await prisma.checkResult.create({
       data: {
         monitorId,
@@ -63,8 +81,10 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       },
     });
+    await changeMonitorStatus(
+      monitor,
+    );
   } finally {
-    await changeMonitorStatus(monitor);
     await prisma.monitor.update({
       where: {
         id: monitorId,
@@ -76,23 +96,28 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
   }
 }
 
-async function getConsecutiveCheckResults(monitorId: number, limit = 10) {
-  return prisma.checkResult.findMany({
-    where: {
-      monitorId,
-    },
-    orderBy: {
-      checkedAt: "desc",
-    },
-    take: limit,
-  });
-}
 
-async function changeMonitorStatus(monitor: Monitor) {
-  const checkResults = await getConsecutiveCheckResults(monitor.id);
+async function changeMonitorStatus(
+  monitor: Monitor,
+  evaluationInput?: EvaluationInput,
+) {
 
-  const nextStatus = determineMonitorStatus(monitor.status, checkResults);
+  let nextStatus: MonitorStatus;
 
+  if (!evaluationInput) {
+    nextStatus = MonitorStatus.DOWN;
+  } else {
+    const criteria =
+      await getMonitorCriteria(
+        monitor.id,
+      );
+
+    nextStatus =
+      determineMonitorStatus(
+        evaluationInput,
+        criteria,
+      );
+  }
 
   if (
     nextStatus !== monitor.status

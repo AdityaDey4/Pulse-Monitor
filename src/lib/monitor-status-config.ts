@@ -1,75 +1,122 @@
-import { CheckResult, MonitorStatus } from "../../generated/prisma/client";
+import {
+  MonitorStatus,
+  SuccessCriteria,
+  CriteriaType,
+  Operator,
+} from "../../generated/prisma/client";
 
-const FAILURE_THRESHOLD = 3;
-const RECOVERY_THRESHOLD = 3;
+export interface EvaluationInput {
+  responseStatusCode: number;
+  responseTime: number;
+  responseBody: unknown;
+}
 
 export function determineMonitorStatus(
-  currentStatus: MonitorStatus,
-  results: CheckResult[],
+  result: EvaluationInput,
+  criteria: SuccessCriteria[],
 ): MonitorStatus {
-
-  if (results.length === 0) {
-    return MonitorStatus.UNKNOWN;
+  if (criteria.length === 0) {
+    return MonitorStatus.UP;
   }
 
-  let consecutiveFailures = 0;
-  let consecutiveSuccesses = 0;
+  const allPassed = criteria.every((criterion) =>
+    evaluateCriteria(
+      criterion,
+      result,
+    ),
+  );
 
-  for (const result of results) {
-    if (!result.success) {
-      consecutiveFailures++;
-    } else {
-      break;
+  return allPassed
+    ? MonitorStatus.UP
+    : MonitorStatus.DOWN;
+}
+
+
+function evaluateCriteria(
+  criterion: SuccessCriteria,
+  result: EvaluationInput,
+): boolean {
+  switch (criterion.type) {
+    case CriteriaType.STATUS_CODE:
+      return compare(
+        result.responseStatusCode,
+        Number(
+          criterion.expectedValue,
+        ),
+        criterion.operator,
+      );
+
+    case CriteriaType.RESPONSE_TIME:
+      return compare(
+        result.responseTime,
+        Number(
+          criterion.expectedValue,
+        ),
+        criterion.operator,
+      );
+
+    case CriteriaType.RESPONSE_BODY: {
+      const value =
+        getJsonPathValue(
+          result.responseBody,
+          criterion.jsonPath ?? "",
+        );
+
+      return String(value)
+        .toLowerCase()
+        .includes(
+          criterion.expectedValue.toLowerCase(),
+        );
     }
-  }
-
-  for (const result of results) {
-    if (result.success) {
-      consecutiveSuccesses++;
-    } else {
-      break;
-    }
-  }
-
-  switch (currentStatus) {
-    case MonitorStatus.UNKNOWN:
-      if (
-        consecutiveSuccesses >=
-        RECOVERY_THRESHOLD
-      ) {
-        return MonitorStatus.UP;
-      }
-
-      if (
-        consecutiveFailures >=
-        FAILURE_THRESHOLD
-      ) {
-        return MonitorStatus.DOWN;
-      }
-
-      return MonitorStatus.UNKNOWN;
-
-    case MonitorStatus.UP:
-      if (
-        consecutiveFailures >=
-        FAILURE_THRESHOLD
-      ) {
-        return MonitorStatus.DOWN;
-      }
-
-      return MonitorStatus.UP;
-
-    case MonitorStatus.DOWN:
-      if (
-        consecutiveSuccesses >=
-        RECOVERY_THRESHOLD
-      ) {
-        return MonitorStatus.UP;
-      }
-
-      return MonitorStatus.DOWN;
 
     default:
-      return currentStatus;
+      return false;
   }
+}
+
+
+function compare(
+  actual: number,
+  expected: number,
+  operator: Operator,
+): boolean {
+  switch (operator) {
+    case Operator.EQUALS:
+      return actual === expected;
+
+    case Operator.NOT_EQUALS:
+      return actual !== expected;
+
+    case Operator.GREATER_THAN:
+      return actual > expected;
+
+    case Operator.GREATER_THAN_EQUAL:
+      return actual >= expected;
+
+    case Operator.LESS_THAN:
+      return actual < expected;
+
+    case Operator.LESS_THAN_EQUAL:
+      return actual <= expected;
+
+    default:
+      return false;
+  }
+}
+
+function getJsonPathValue(
+  obj: unknown,
+  path: string,
+): unknown {
+  if (!path) {
+    return obj;
+  }
+
+  return path
+    .split(".")
+    .reduce<any>(
+      (current, key) =>
+        current?.[key],
+      obj,
+    );
 }

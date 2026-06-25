@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { AppResponseWrapper, createErrorResponse, createSuccessResponse } from "@/types/common.type";
-import { SuccessCriteria } from "../../generated/prisma/client";
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma, SuccessCriteria } from "../../generated/prisma/client";
 
 export async function assignCriteriaToMonitor(
   tx: Prisma.TransactionClient,
@@ -92,5 +90,25 @@ export async function assignCriteriaToMonitor(
       ),
       skipDuplicates: true,
     },
+  );
+}
+
+export async function getMonitorCriteria(
+  monitorId: number,
+): Promise<SuccessCriteria[]> {
+  const assignments =
+    await prisma.monitorSuccessCriteria.findMany({
+      where: {
+        monitorId,
+      },
+
+      include: {
+        successCriteria: true,
+      },
+    });
+
+  return assignments.map(
+    (assignment) =>
+      assignment.successCriteria,
   );
 }
