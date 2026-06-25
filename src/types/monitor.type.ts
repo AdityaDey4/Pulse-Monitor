@@ -18,6 +18,7 @@ export interface MonitorType {
   method: HttpMethod;
   status: MonitorStatus;
   intervalMinutes: number;
+  successCriteriaIds: number[];
   isActive: boolean;
   lastCheckedAt: Date | null;
   createdAt: Date;

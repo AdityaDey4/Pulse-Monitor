@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { getSocket } from "@/lib/socket-client";
 
 import { toast } from "sonner";
-import { NotificationPayload } from "@/types/realtime.type";
+import { NotificationItem } from "@/types/realtime.type";
 
 export function useNotifications() {
   const socket = getSocket();
@@ -14,7 +14,7 @@ export function useNotifications() {
 
     socket.on(
       "notification:created",
-      (payload: NotificationPayload) => {
+      (payload: NotificationItem) => {
 
         payload.type == 'ERROR' &&
           toast.error(payload.message);

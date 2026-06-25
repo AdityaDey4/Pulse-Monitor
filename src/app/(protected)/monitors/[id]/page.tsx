@@ -2,8 +2,6 @@ import Link from "next/link";
 
 import { ArrowLeft } from "lucide-react";
 
-import { getMonitorDetailsAction } from "@/actions/monitor.action";
-
 import { Button } from "@/components/ui/button";
 
 import { MonitorOverviewCard } from "@/components/monitor/_partials/monitor-overview-card";
@@ -15,7 +13,9 @@ import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { SuccessFailureChart } from "@/components/monitor/_partials/monitor-analytics-section";
 import { ResponseMetricsCard } from "@/components/monitor/_partials/response-metrics-card";
 import { AvailabilityHeatmap } from "@/components/monitor/_partials/availability-heatmap";
-import { CheckResultsSheet } from "@/components/monitor/_partials/check-results-sheet";
+import { MonitorRealtime } from "@/components/monitor/monitor-realtime";
+import { getMonitorDetails } from "@/services/monitor.service";
+import { auth } from "@/lib/auth";
 
 interface Props {
   params: Promise<{
@@ -25,8 +25,9 @@ interface Props {
 
 export default async function MonitorDetailsPage({ params }: Props) {
   const { id } = await params;
+  const session = await auth();
 
-  const result = await getMonitorDetailsAction(Number(id));
+  const result = await getMonitorDetails(Number(id), Number(session?.user?.id));
 
   if (result.status === "error" || !result.data) {
     return <div>{result.message}</div>;
@@ -37,16 +38,18 @@ export default async function MonitorDetailsPage({ params }: Props) {
   const metrics = calculateMonitorMetrics(checkResults);
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <CheckResultsSheet monitorId={monitor.id} />
-
+      <div className="flex justify-end">
         <Button variant="outline" asChild>
-          <Link href="/monitor">
+          <Link href="/monitors">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Monitors
           </Link>
         </Button>
       </div>
+
+      <MonitorRealtime
+        monitorId={String(monitor.id)}
+      />
 
       <MonitorOverviewCard monitor={monitor} />
 
@@ -75,7 +78,10 @@ export default async function MonitorDetailsPage({ params }: Props) {
         </div>
 
         <div className="lg:col-span-1">
-          <RecentChecksTimeline checkResults={checkResults} />
+          <RecentChecksTimeline
+            monitorId={monitor.id}
+            checkResults={checkResults}
+          />
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -95,11 +101,6 @@ export default async function MonitorDetailsPage({ params }: Props) {
         monitorName={monitor.name}
         checkResults={checkResults}
       />
-      {/* <CheckHistoryTable
-        checkResults={
-          checkResults
-        }
-      /> */}
     </div>
   );
 }

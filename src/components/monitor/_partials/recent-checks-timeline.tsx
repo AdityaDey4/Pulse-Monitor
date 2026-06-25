@@ -1,23 +1,29 @@
 import { CheckCircle2, XCircle } from "lucide-react";
 
 import type { CheckResultType } from "@/types/monitor.type";
+import { CheckResultsSheet } from "./check-results-sheet";
 
 interface Props {
+  monitorId: number;
   checkResults: CheckResultType[];
 }
 
-export function RecentChecksTimeline({ checkResults }: Props) {
-  const recentChecks = checkResults.slice(0, 50);
+export function RecentChecksTimeline({ monitorId, checkResults }: Props) {
+  const recentChecks = checkResults.slice(0, 5);
   const totalChecks = checkResults.length;
-  const hiddenCount = totalChecks - recentChecks.length;
 
   return (
-    <div className="flex flex-col rounded-xl border bg-card p-4" style={{ height: 450 }}>
+    <div
+      className="flex flex-col rounded-xl border bg-card p-4"
+      style={{ height: 450 }}
+    >
       {/* Header — never shrinks */}
       <div className="mb-4 flex shrink-0 items-center justify-between">
         <div>
           <h2 className="text-base font-semibold">Recent Checks</h2>
-          <p className="text-xs text-muted-foreground">Latest monitoring results</p>
+          <p className="text-xs text-muted-foreground">
+            Latest monitoring results
+          </p>
         </div>
         <div className="rounded-md bg-muted px-2 py-1 text-xs font-medium tabular-nums">
           {totalChecks.toLocaleString()}
@@ -74,16 +80,16 @@ export function RecentChecksTimeline({ checkResults }: Props) {
                     result.success ? "text-emerald-500" : "text-red-500"
                   }`}
                 >
-                  {result.responseTime != null ? `${result.responseTime}ms` : "—"}
+                  {result.responseTime != null
+                    ? `${result.responseTime}ms`
+                    : "—"}
                 </p>
               </div>
             ))}
 
-            {hiddenCount > 0 && (
-              <p className="pb-0.5 pt-1 text-center text-[11px] text-muted-foreground">
-                +{hiddenCount.toLocaleString()} more checks
-              </p>
-            )}
+            <div className="mt-3 border-t pt-3">
+              <CheckResultsSheet monitorId={monitorId} />
+            </div>
           </>
         )}
       </div>

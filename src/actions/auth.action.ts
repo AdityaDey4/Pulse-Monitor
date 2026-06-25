@@ -4,6 +4,7 @@ import { registerUser, validateCredentials } from "@/services/auth.service";
 import { AppResponseWrapper, createErrorResponse } from "@/types/common.type";
 import { LoginInput, LoginSchema, RegisterInput, RegisterSchema } from "@/validations/auth.validation";
 import { User } from "../../generated/prisma/client";
+import { signOut } from "@/lib/auth";
 
 export async function registerAction(
   values: RegisterInput
@@ -40,4 +41,10 @@ export async function loginAction(
     parsed.data.email,
     parsed.data.password,
   );
+}
+
+export async function logoutAction(): Promise<void> {
+  await signOut({
+    redirectTo: "/login",
+  });
 }

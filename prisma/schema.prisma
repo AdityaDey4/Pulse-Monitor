@@ -17,6 +17,7 @@ model User {
   image     String?
   accounts  Account[]
   monitors  Monitor[]
+  successCriteria SuccessCriteria[]
   notifications   Notification[]
 }
 
@@ -43,6 +44,7 @@ model Monitor {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   checkResults    CheckResult[]
+  criteria        MonitorSuccessCriteria[]
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -76,6 +78,33 @@ model Notification {
   @@index([userId])
 }
 
+model SuccessCriteria {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  name            String
+  type            CriteriaType
+  jsonPath        String?
+  operator        Operator
+  expectedValue   String
+  monitors        MonitorSuccessCriteria[]
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+
+model MonitorSuccessCriteria {
+  monitorId         Int
+  successCriteriaId Int
+
+  monitor           Monitor         @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  successCriteria   SuccessCriteria @relation(fields: [successCriteriaId],references: [id])
+
+  assignedAt        DateTime @default(now())
+
+  @@id([monitorId, successCriteriaId])
+}
 
 enum HttpMethod {
   GET
@@ -84,6 +113,7 @@ enum HttpMethod {
   DELETE
   PATCH
 }
+
 enum MonitorStatus {
   UP
   DOWN
@@ -96,4 +126,23 @@ enum NotificationType {
   REMINDER
   ERROR
   SUCCESS
+}
+
+enum CriteriaType {
+  STATUS_CODE
+  RESPONSE_TIME
+  RESPONSE_BODY
+}
+
+enum Operator {
+  EQUALS
+  NOT_EQUALS
+
+  GREATER_THAN
+  GREATER_THAN_EQUAL
+
+  LESS_THAN
+  LESS_THAN_EQUAL
+
+  CONTAINS
 }

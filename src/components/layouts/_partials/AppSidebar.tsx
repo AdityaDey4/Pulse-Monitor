@@ -28,13 +28,19 @@ import {
 
 const navigation = [
   {
-    label: "Overview",
-    items: [{ title: "Dashboard", href: "/", icon: LayoutDashboard }],
+    label: "Dashboard",
+    items: [{ title: "Dashboard", href: "/dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Monitoring",
     items: [
       { title: "Monitors", href: "/monitors", icon: Activity },
+    ],
+  },
+  {
+    label: "Success Criteria",
+    items: [
+      { title: "Custom Criteria's", href: "/success-criteria", icon: Activity },
     ],
   },
 ];

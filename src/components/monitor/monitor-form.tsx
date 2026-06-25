@@ -27,14 +27,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { SuccessCriteriaType } from "@/types/success-criteria.type";
+import { SuccessCriteriaCombobox } from "./_partials/success-criteris-combobox";
 
 interface Props {
+  successCriteriaList: SuccessCriteriaType[]
   defaultValues?: Partial<CreateMonitorInput>;
   monitorId?: number;
   onSuccess?: () => void;
 }
 
-export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
+export function MonitorForm({ successCriteriaList, defaultValues, monitorId, onSuccess }: Props) {
   const router = useRouter();
 
   const form = useForm<CreateMonitorInput>({
@@ -44,10 +47,12 @@ export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
       url: defaultValues?.url ?? "",
       method: defaultValues?.method ?? "GET",
       intervalMinutes: defaultValues?.intervalMinutes ?? 5,
+      successCriteriaIds: defaultValues?.successCriteriaIds ?? [],
     },
   });
 
   const onSubmit = async (values: CreateMonitorInput) => {
+
     const result = monitorId
       ? await updateMonitorAction({
           id: monitorId,
@@ -57,16 +62,11 @@ export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
 
     if (result.status === "error") {
       toast.error(result.message);
-
       return;
     }
-
     toast.success(result.message);
-
     form.reset();
-
     router.refresh();
-
     onSuccess?.();
   };
   return (
@@ -77,7 +77,9 @@ export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Monitor Name</FormLabel>
+              <FormLabel>
+                Monitor Name <span className="text-red-500">*</span>
+              </FormLabel>
 
               <FormControl>
                 <Input placeholder="Backend Health API" {...field} />
@@ -93,7 +95,9 @@ export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
           name="url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL</FormLabel>
+              <FormLabel>
+                URL <span className="text-red-500">*</span>
+              </FormLabel>
 
               <FormControl>
                 <Input
@@ -109,10 +113,35 @@ export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
 
         <FormField
           control={form.control}
+          name="successCriteriaIds"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Success Criteria
+                <span className="text-red-500">*</span>
+              </FormLabel>
+
+              <FormControl>
+                <SuccessCriteriaCombobox
+                  successCriteriaList={successCriteriaList}
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="intervalMinutes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Check Interval (Minutes)</FormLabel>
+              <FormLabel>
+                Check Interval (Minutes) <span className="text-red-500">*</span>
+              </FormLabel>
 
               <FormControl>
                 <Input

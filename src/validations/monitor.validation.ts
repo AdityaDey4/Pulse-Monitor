@@ -24,6 +24,13 @@ export const CreateMonitorSchema =
       .int()
       .min(1)
       .max(1440),
+
+    successCriteriaIds: z
+      .array(z.number())
+      .min(
+        1,
+        "Please select at least one success criteria"
+      ),
   });
 
 export const UpdateMonitorSchema =

@@ -1,5 +1,14 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+
 import type { MonitorType } from "@/types/monitor.type";
-import { MonitorCard } from "./monitor-card";
+
+import { MonitorTable } from "./monitor-table";
+import { RefreshCw } from "lucide-react";
 
 interface Props {
   monitors: MonitorType[];
@@ -8,22 +17,31 @@ interface Props {
 export function MonitorList({
   monitors,
 }: Props) {
-  if (!monitors.length) {
-    return (
-      <div className="rounded-lg border p-8 text-center">
-        No monitors found.
-      </div>
-    );
-  }
+  const router = useRouter();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 30000);
+
+    return () =>
+      clearInterval(interval);
+  }, [router]);
 
   return (
-    <div className="grid gap-4">
-      {monitors.map((monitor) => (
-        <MonitorCard
-          key={monitor.id}
-          monitor={monitor}
-        />
-      ))}
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={() => router.refresh()}
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <MonitorTable
+        monitors={monitors}
+      />
     </div>
   );
 }

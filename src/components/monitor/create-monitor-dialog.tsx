@@ -12,13 +12,16 @@ import {
 } from "@/components/ui/dialog";
 
 import { MonitorForm } from "./monitor-form";
+import { SuccessCriteriaType } from "@/types/success-criteria.type";
 
 interface Props {
   children: React.ReactNode;
+  successCriteriaList: SuccessCriteriaType[]
 }
 
 export function CreateMonitorDialog({
   children,
+  successCriteriaList,
 }: Props) {
   const [open, setOpen] =
     useState(false);
@@ -27,12 +30,18 @@ export function CreateMonitorDialog({
     <Dialog
       open={open}
       onOpenChange={setOpen}
+
     >
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl">
+<DialogContent
+  className="sm:max-w-xl" 
+  onInteractOutside={(e) => e.preventDefault()}
+  onPointerDownOutside={(e) => e.preventDefault()}
+  onFocusOutside={(e) => e.preventDefault()}
+>
         <DialogHeader>
           <DialogTitle>
             Create Monitor
@@ -44,6 +53,7 @@ export function CreateMonitorDialog({
         </DialogHeader>
 
         <MonitorForm
+          successCriteriaList={successCriteriaList}
           onSuccess={() =>
             setOpen(false)
           }

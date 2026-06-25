@@ -11,7 +11,10 @@ import { Card } from "@/components/ui/card";
 import type { MonitorType } from "@/types/monitor.type";
 
 interface Props {
-  monitor: MonitorType;
+  monitor: Omit<
+    MonitorType,
+    "successCriteriaIds"
+  >;
 }
 
 export function MonitorOverviewCard({ monitor }: Props) {

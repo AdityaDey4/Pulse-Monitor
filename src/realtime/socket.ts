@@ -38,6 +38,25 @@ export async function initializeSocket(
 
     }
   );
+
+  socket.on(
+      "join-monitor-room",
+      (monitorId: string) => {
+        socket.join(
+          `monitor:${monitorId}`
+        );
+      }
+    );
+
+    socket.on(
+      "leave-monitor-room",
+      (monitorId: string) => {
+        socket.leave(
+          `monitor:${monitorId}`
+        );
+      }
+    );
+
 });
 
   return io;
