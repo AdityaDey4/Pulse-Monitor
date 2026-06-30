@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String?
-  createdAt DateTime  @default(now())
-  password  String?
-  updatedAt DateTime  @updatedAt
-  image     String?
-  accounts  Account[]
-  monitors  Monitor[]
+  id              Int               @id @default(autoincrement())
+  email           String            @unique
+  name            String?
+  createdAt       DateTime          @default(now())
+  password        String?
+  updatedAt       DateTime          @updatedAt
+  image           String?
+  accounts        Account[]
+  monitors        Monitor[]
   successCriteria SuccessCriteria[]
   notifications   Notification[]
+  emailRecipients EmailRecipient[]
 }
 
 model Account {
@@ -32,20 +33,21 @@ model Account {
 }
 
 model Monitor {
-  id              Int            @id @default(autoincrement())
+  id              Int                      @id @default(autoincrement())
   userId          Int
   name            String
-  url             String         @unique
+  url             String                   @unique
   method          HttpMethod
-  status          MonitorStatus  @default(UNKNOWN)
+  status          MonitorStatus            @default(UNKNOWN)
   intervalMinutes Int
-  isActive        Boolean        @default(true)
+  isActive        Boolean                  @default(true)
   lastCheckedAt   DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
   checkResults    CheckResult[]
   criteria        MonitorSuccessCriteria[]
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailRecipients MonitorEmailRecipient[]
 
   @@index([userId])
 }
@@ -65,45 +67,89 @@ model CheckResult {
 }
 
 model Notification {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  message   String
-  type      NotificationType
-  isRead    Boolean          @default(false)
+  id           Int              @id @default(autoincrement())
+  userId       Int
+  message      String
+  type         NotificationType
+  isRead       Boolean          @default(false)
   redirectPath String?
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt       DateTime?
+  createdAt    DateTime         @default(now())
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model SuccessCriteria {
-  id              Int       @id @default(autoincrement())
-  userId          Int
-  name            String
-  type            CriteriaType
-  jsonPath        String?
-  operator        Operator
-  expectedValue   String
-  monitors        MonitorSuccessCriteria[]
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            Int                      @id @default(autoincrement())
+  userId        Int
+  name          String
+  type          CriteriaType
+  jsonPath      String?
+  operator      Operator
+  expectedValue String
+  monitors      MonitorSuccessCriteria[]
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
 }
-
 
 model MonitorSuccessCriteria {
   monitorId         Int
   successCriteriaId Int
 
-  monitor           Monitor         @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
-  successCriteria   SuccessCriteria @relation(fields: [successCriteriaId],references: [id])
+  successCriteria SuccessCriteria @relation(fields: [successCriteriaId], references: [id])
 
-  assignedAt        DateTime @default(now())
+  assignedAt DateTime @default(now())
 
   @@id([monitorId, successCriteriaId])
+}
+
+model EmailRecipient {
+  id Int @id @default(autoincrement())
+
+  userId Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+
+  email String
+
+  consecutiveThreshold Int @default(3)
+
+  monitors MonitorEmailRecipient[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, email])
+  @@index([userId])
+}
+
+model MonitorEmailRecipient {
+  monitorId Int
+
+  recipientId Int
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  recipient EmailRecipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  previousStatus MonitorStatus @default(UNKNOWN)
+
+  consecutiveCount Int @default(0)
+
+
+  assignedAt DateTime @default(now())
+
+  @@id([monitorId, recipientId])
+
+  @@index([monitorId])
+
+  @@index([recipientId])
 }
 
 enum HttpMethod {

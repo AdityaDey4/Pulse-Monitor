@@ -1,57 +1,34 @@
 import { z } from "zod";
 
-export const CreateMonitorSchema =
-  z.object({
-    name: z
-      .string()
-      .min(3, "Name is required")
-      .max(100),
+export const CreateMonitorSchema = z.object({
+  name: z.string().min(3, "Name is required").max(100),
 
-    url: z
-      .string()
-      .url("Invalid URL"),
+  url: z.string().url("Invalid URL"),
 
-    method: z.enum([
-      "GET",
-      "POST",
-      "PUT",
-      "PATCH",
-      "DELETE",
-    ]),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 
-    intervalMinutes: z
-      .number()
-      .int()
-      .min(1)
-      .max(1440),
+  intervalMinutes: z.number().int().min(1).max(1440),
 
-    successCriteriaIds: z
-      .array(z.number())
-      .min(
-        1,
-        "Please select at least one success criteria"
-      ),
-  });
+  successCriteriaIds: z
+    .array(z.number())
+    .min(1, "Please select at least one success criteria"),
+  recipientIds: z
+    .array(z.number())
+    .min(1, "Please select at least one email recipient"),
+});
 
-export const UpdateMonitorSchema =
-  CreateMonitorSchema.extend({
-    id: z.number(),
-  });
+export const UpdateMonitorSchema = CreateMonitorSchema.extend({
+  id: z.number(),
+});
 
+export type CreateMonitorInput = z.infer<typeof CreateMonitorSchema>;
 
-export type CreateMonitorInput =
-  z.infer<typeof CreateMonitorSchema>;
+export type UpdateMonitorInput = z.infer<typeof UpdateMonitorSchema>;
 
-export type UpdateMonitorInput =
-  z.infer<typeof UpdateMonitorSchema>;
+export const ChangeMonitorStatusSchema = z.object({
+  monitorId: z.number(),
+});
 
-
-export const ChangeMonitorStatusSchema =
-  z.object({
-    monitorId: z.number()
-  });
-
-export type ChangeMonitorStatusInput =
-  z.infer<
-    typeof ChangeMonitorStatusSchema
-  >;
+export type ChangeMonitorStatusInput = z.infer<
+  typeof ChangeMonitorStatusSchema
+>;
